@@ -345,3 +345,4 @@ Add webhook
 
 # LIKE, COMMENT, & SUBSCRIBE To iQuant on YouTube !!!
 
+# GCP
