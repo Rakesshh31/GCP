@@ -24,8 +24,16 @@ pipeline {
 
         stage('Checkout GitHub Codes'){
             steps {
+                cleanWs()
                 echo 'Checking out GitHub Codes ...'
-		checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'jenkins-gcp', url: 'https://github.com/iQuantC/Jenkins_GCP_CloudRun.git']])
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'jenkins-gcp', url: 'https://github.com/iQuantC/Jenkins_GCP_CloudRun.git']])
+                // Ensure workspace matches origin/main exactly (avoid stale files)
+                sh 'git fetch --all'
+                sh 'git reset --hard origin/main'
+                sh 'git clean -fdx'
+                // Print current commit and the Dockerfile to verify pipeline uses the expected files
+                sh 'git rev-parse --short HEAD'
+                sh 'sed -n "1,40p" Dockerfile'
             }
         }
 
@@ -63,7 +71,8 @@ pipeline {
             steps {
                 echo 'Building the Java App Docker Image'
 		script {
-			sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+			// build without cache to avoid using a stale base image reference
+			sh "docker build --no-cache -t ${IMAGE_NAME}:${IMAGE_TAG} ."
 		}
             }
         }
