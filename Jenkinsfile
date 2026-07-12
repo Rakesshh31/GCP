@@ -26,7 +26,7 @@ pipeline {
             steps {
                 cleanWs()
                 echo 'Checking out GitHub Codes ...'
-                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'jenkins-gcp', url: 'https://github.com/iQuantC/Jenkins_GCP_CloudRun.git']])
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'jenkins-gcp', url: 'https://github.com/Rakesshh31/GCP.git']])
                 // Ensure workspace matches origin/main exactly (avoid stale files)
                 sh 'git fetch --all'
                 sh 'git reset --hard origin/main'
