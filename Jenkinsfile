@@ -48,6 +48,17 @@ pipeline {
             }
         }
 
+        stage('Debug Dockerfile') {
+           steps {
+        sh '''
+        pwd
+        ls -la
+        echo "========== Dockerfile =========="
+        cat Dockerfile
+        '''
+    }
+}
+
         stage('Build & Tag Docker Image'){
             steps {
                 echo 'Building the Java App Docker Image'
