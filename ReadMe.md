@@ -23,7 +23,7 @@ docker network create jenkins-java
 ```
 
 ```sh
-docker run -d --name jenkins-dind \
+docker run -d --name jenkins \
 -p 8080:8080 \
 -p 50000:50000 \
 -v /var/run/docker.sock:/var/run/docker.sock \
@@ -40,7 +40,7 @@ docker ps
 ```
 Get Jenkins Container IP Address
 ```sh
-docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' jenkins-dind
+docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' jenkins
 ```
 On your browser, open
 ```sh
@@ -52,7 +52,7 @@ Note: If you see the error "It appears that your reverse proxy set up is broken.
 
 ### Log into the Jenkins Container
 ```sh
-docker exec -it jenkins-dind bash
+docker exec -it jenkins bash
 ```
 
 ### Set up Docker in the Jenkins container
@@ -72,13 +72,13 @@ docker ps
 ```
 
 ```sh
-docker restart jenkins-dind
+docker restart jenkins
 ```
 
 ### Check the Logs of the Jenkins Container
 This will also provide you the Jenkins Initial Password. Use the password to login to Jenkins & Install suggested plugins
 ```sh
-docker logs -f jenkins-dind
+docker logs -f jenkins
 ```
 Ctrl + C to exit logs
 
@@ -95,7 +95,7 @@ In your GitHub Account,
 
 ### Install Java & Maven in the Jenkins Container
 ```sh
-docker exec -it jenkins-dind bash
+docker exec -it jenkins bash
 ```
 
 Check Java version (Usually installed with Jenkins since Java is one of Jenkins' Dependencies) & JAVA_HOME
@@ -164,7 +164,7 @@ and Change the password.
 
 ### Login to Jenkins Container & Establish Communication to the SonarQube Container
 ```sh
-docker exec -it jenkins-dind bash
+docker exec -it jenkins bash
 ```
 Update & Install Ping in Jenkins Container once you've logged in:
 ```sh
@@ -175,7 +175,7 @@ exit
 
 ***Use Jenkins Container bash to Ping SonarQube Container***
 ```sh
-docker exec -it jenkins-dind ping sonarqube-dind
+docker exec -it jenkins ping sonarqube-dind
 ```
 You will see bytes of data coming in showing established connection between the 2 containers.
 
@@ -215,7 +215,7 @@ Create a Local Project in SonarQube and provide the ff:
 ## Trivy File System Scan
 Login to the Jenkins Container
 ```sh
-docker exec -it jenkins-dind bash
+docker exec -it jenkins bash
 ```
 Check if Trivy is installed
 ```sh
@@ -272,7 +272,7 @@ On Jenkins > Manage Jenkins > Credentials > Kind: Secret file, ID: gcp-jmsa, upl
 ### Install Google Cloud SDK (gcloud) on Jenkins Container
 Login to the Jenkins Container
 ```sh
-docker exec -it jenkins-dind bash
+docker exec -it jenkins bash
 ```
 
 ```sh
