@@ -8,11 +8,11 @@ pipeline {
             }
         }
 
-        // Add one stage at a time below if you want to test more.
-        // stage('Checkout') {
-        //     steps {
-        //         echo 'Checkout step'
-        //     }
-        // }
+        stage('Checkout Repository') {
+            steps {
+                echo 'Checking out repository code'
+                checkout scm
+            }
+        }
     }
 }
