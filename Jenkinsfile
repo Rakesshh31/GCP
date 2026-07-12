@@ -8,10 +8,11 @@ pipeline {
     environment {
 	IMAGE_NAME = "java-app"
     IMAGE_TAG = "${BUILD_NUMBER}"
-	GCP_PROJECT_ID = "focal-dock-440200-u5"
-	FULL_IMAGE_NAME = "us-docker.pkg.dev/${GCP_PROJECT_ID}/java-app-repo-02/${IMAGE_NAME}:${IMAGE_TAG}"
-	SERVICE_NAME = "java-app-service"
-	REGION = "us-central1"
+	ACR_NAME = "javarepooooooooooooooooooooo"
+	ACR_LOGIN_SERVER = "${ACR_NAME}.azurecr.io"
+	RESOURCE_GROUP = "1-7e01f143-playground-sandbox"
+	ACI_NAME = "java-app-container"
+	ACI_REGION = "eastus"
     }
     stages {
         stage('Initialize Pipeline'){
@@ -101,4 +102,57 @@ pipeline {
             }
         }
     }
+    
+    stage('Tag & Push Image to Azure Container Registry (ACR)') {
+            steps {
+		withCredentials([file(credentialsId: 'azServicePrincipal', variable: 'AZURE_CRED')]) {
+			sh '''
+				echo 'Tagging and Pushing Image to ACR'
+    				az acr login --name $ACR_NAME
+
+          			echo "Tagging Docker image..."
+          			docker tag $IMAGE_NAME:$IMAGE_TAG $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
+
+          			echo "Pushing Docker image to ACR..."
+          			docker push $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
+       			'''
+		}
+            }
+        }
+	stage('Deploy to Azure Container Instance (ACI) & Get App URL') {
+	    steps {
+		withCredentials([file(credentialsId: 'azServicePrincipal', variable: 'AZURE_CRED')]) {
+			sh '''
+				echo 'Deploying Image to ACI'
+				az container create \
+            					--name $ACI_NAME \
+            					--resource-group $RESOURCE_GROUP \
+            					--image $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG \
+            					--registry-login-server $ACR_LOGIN_SERVER \
+            					--registry-username $(az acr credential show --name $ACR_NAME --query username -o tsv) \
+            					--registry-password $(az acr credential show --name $ACR_NAME --query passwords[0].value -o tsv) \
+            					--dns-name-label java-app-${BUILD_NUMBER} \
+            					--ports 8090 \
+            					--location $ACI_REGION \
+		 				--os-type Linux \
+       						--cpu 1 \
+  						--memory 1.5 \
+		 				--restart-policy Never
+
+       					echo "Waiting for ACI to initialize..."
+          				sleep 30
+
+       					echo "Getting the URL of the ACI app..."
+          				APP_URL=$(az container show \
+            					--resource-group $RESOURCE_GROUP \
+            					--name $ACI_NAME \
+            					--query ipAddress.fqdn \
+            					--output tsv):8090
+
+          				echo "Application URL: http://$APP_URL"
+    			'''
+			}
+		    }
+	    }
+	}
 }
